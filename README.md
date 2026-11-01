@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 実案件課題⑤：画像アップロードアプリ
 
-## Getting Started
+### 1. 実装した機能
 
-First, run the development server:
+Next.js・TypeScript・Tailwind CSS・Supabase Storageを使用して、画像をアップロード・保存・表示できるWebアプリを作成。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 画像のドラッグ＆ドロップ
+- ファイル選択による画像アップロード
+- Supabase Storageへの画像保存
+- アップロード済み画像の一覧表示
+- ページ再読み込み後も保存済み画像を表示
+- ドラッグ中のアップロードエリアの色変更
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. ファイルのバリデーション
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+アップロード前に、以下の条件をチェックするように実装。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ファイルサイズ：5MB未満
+- 対応形式：JPG・PNG・WebP
+- 条件を満たさない場合はエラーメッセージを表示
 
-## Learn More
+### 3. 今回学んだこと
 
-To learn more about Next.js, take a look at the following resources:
+#### ① Supabaseとは
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+データベースやファイル保存など、Webアプリに必要なバックエンド機能を提供するサービス。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+今回はSupabase Storageを利用して、画像ファイルを保存した。
 
-## Deploy on Vercel
+#### ② Supabase Storageへの画像アップロード
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`.upload()` を使用することで、選択した画像ファイルをSupabase Storageに保存できる。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+また、`.getPublicUrl()` を使うことで、保存した画像を表示するためのURLを取得できる。
+
+#### ③ 環境変数（.env.local）
+
+Supabaseの接続情報をソースコードに直接書かず、`.env.local` に分けて管理した。
+
+GitHubに公開する際は、接続情報を含むファイルをアップロードしないことが重要。
+
+#### ④ useStateによる状態管理
+
+Reactの `useState` を使用して、画面の状態を管理した。
+
+今回使用した状態：
+
+- `message`：成功・エラーメッセージ
+- `selectedFile`：選択された画像ファイル
+- `isDragging`：ドラッグ中かどうか
+- `imageList`：アップロード済み画像のURL一覧
+
+状態が変更されると、Reactが画面を再描画する仕組みを学んだ。
+
+#### ⑤ useEffectによる初回読み込み
+
+`useEffect` を使用して、ページが最初に表示されたタイミングで `fetchImages()` を実行するようにした。
+
+これにより、ページを再読み込みしても、Supabaseに保存されている画像を取得して表示できる。
+
+#### ⑥ 非同期処理（async / await）
+
+Supabaseへの画像アップロードや画像一覧の取得は、処理が完了するまで時間がかかる。
+
+`async / await` を使用することで、処理の完了を待ってから次の処理に進めることを学んだ。
+
+#### ⑦ Git・GitHubへの公開
+
+Gitで変更内容を記録し、GitHubにソースコードを公開した。
+
+また、GitHubのメールアドレス非公開設定によってPushが拒否されたため、GitHubのnoreplyメールアドレスを設定して対応した。
+
+### 4. 今回意識したこと
+
+- 画像をアップロードする前に、ファイル形式とサイズをチェックする
+- 画像の保存先と、画面に表示するためのURLを区別する
+- Supabaseの接続情報を環境変数で管理する
+- ページを再読み込みしても画像が表示されるようにする
+- GitHubに公開してはいけない情報を確認する
+
+### 5. 今回の課題で理解したこと
+
+今回の課題では、Webアプリの画面を作るだけでなく、外部サービスと接続してファイルを保存・取得する流れを学んだ。
+
+特に、以下の流れを理解することができた。
+
+1. ユーザーが画像を選択する
+2. ファイル形式とサイズをチェックする
+3. Supabase Storageに画像をアップロードする
+4. 保存された画像のURLを取得する
+5. 画像一覧を取得して画面に表示する
+
+### 6. 今後の改善点
+
+- 画像の削除機能
+- アップロード中のローディング表示
+- ログイン機能による利用者の制限
+- アップロードできる画像枚数の制限
+
+※現在はデモ用途として公開設定を使用している。実運用では認証やアップロード制限などのセキュリティ対策が必要。
