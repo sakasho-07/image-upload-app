@@ -8,7 +8,9 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [imageList, setImageList] = useState<string[]>([]);
+  const [imageList, setImageList] = useState<
+    { name: string; url: string }[]
+  >([]);
 
   async function handleUpload() {
     if (!selectedFile) {
@@ -54,15 +56,33 @@ export default function Home() {
       return;
     }
 
-    const urls = data.map((file) => {
+    const images = data.map((file) => {
       const { data } = supabase.storage
         .from("images")
         .getPublicUrl(file.name);
 
-      return data.publicUrl;
+      return {
+        name: file.name,
+        url: data.publicUrl,
+      };
     });
 
-    setImageList(urls);
+    setImageList(images);
+  }
+
+  async function handleDelete(fileName: string) {
+    const { error } = await supabase.storage
+      .from("images")
+      .remove([fileName]);
+
+    if (error) {
+      setMessage("画像の削除に失敗しました：" + error.message);
+      return;
+    }
+
+    await fetchImages();
+
+    setMessage("画像を削除しました！");
   }
 
   useEffect(() => {
@@ -82,8 +102,8 @@ export default function Home() {
 
         <div
           className={`mt-8 rounded-xl border-2 border-dashed p-12 text-center ${isDragging
-              ? "border-blue-500 bg-blue-50"
-              : "border-gray-400 bg-white"
+            ? "border-blue-500 bg-blue-50"
+            : "border-gray-400 bg-white"
             }`}
 
           onDragLeave={() => {
@@ -169,16 +189,25 @@ export default function Home() {
           アップロード済み画像
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {imageList.map((url) => (
-            <Image
-              key={url}
-              src={url}
-              alt="アップロード済み画像"
-              width={300}
-              height={200}
-              style={{ width: "100%", height: "auto" }}
-              className="rounded-lg"
-            />
+          {imageList.map((image) => (
+            <div key={image.name}>
+              <Image
+                src={image.url}
+                alt="アップロード済み画像"
+                width={300}
+                height={200}
+                style={{ width: "100%", height: "auto" }}
+                className="rounded-lg"
+              />
+
+              <button
+                type="button"
+                onClick={() => handleDelete(image.name)}
+                className="mt-2 rounded-lg bg-red-600 px-4 py-2 text-white"
+              >
+                削除
+              </button>
+            </div>
           ))}
         </div>
       </div>
