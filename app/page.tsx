@@ -106,8 +106,9 @@ export default function Home() {
             : "border-gray-400 bg-white"
             }`}
 
-          onDragLeave={() => {
-            setIsDragging(false);
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
           }}
           onDrop={(e) => {
             e.preventDefault();
